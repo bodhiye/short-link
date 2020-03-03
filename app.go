@@ -53,13 +53,15 @@ func (a *App) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 	// }
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		fmt.Println(err)
+		respondWithError(w, StatusError{http.StatusBadRequest,
+			fmt.Errorf("parse parameters failed %v", r.Body)})
 		return
 	}
 	defer r.Body.Close()
 
 	if err := validator.Validate(req); err != nil {
-		fmt.Println(err)
+		respondWithError(w, StatusError{http.StatusBadRequest,
+			fmt.Errorf("validate parameters failed %v", req)})
 		return
 	}
 
@@ -81,4 +83,23 @@ func (a *App) Redirect(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) Run(addr string) {
 	log.Fatal(http.ListenAndServe(addr, a.Router))
+}
+
+func respondWithError(w http.ResponseWriter, err error) {
+	switch e := err.(type) {
+	case Error:
+		log.Printf("HTTP %d - %s", e.Status(), e)
+		respondWithJSON(w, e.Status(), e.Error())
+	default:
+		respondWithJSON(w, http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError))
+	}
+}
+
+func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+	resp, _ := json.Marshal(payload)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(resp)
 }
