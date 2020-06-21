@@ -74,20 +74,35 @@ func (a *App) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("%+v\n", req)
+	s, err := a.Config.S.Shorten(req.URL, req.ExpireDate)
+	if err != nil {
+		respondWithError(w, err)
+	} else {
+		respondWithJSON(w, http.StatusCreated, shortlinkResp{Shortlink: s})
+	}
 }
 
 func (a *App) GetShortLinkInfo(w http.ResponseWriter, r *http.Request) {
 	vals := r.URL.Query()
 	url := vals.Get("shortlink")
 
-	fmt.Printf("%s\n", url)
+	d, err := a.Config.S.ShortlinkInfo(url)
+	if err != nil {
+		respondWithError(w, err)
+	} else {
+		respondWithJSON(w, http.StatusOK, d)
+	}
 }
 
 func (a *App) Redirect(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	fmt.Printf("%s\n", vars["shortlink"])
+	u, err := a.Config.S.Unshorten(vars["shortlink"])
+	if err != nil {
+		respondWithError(w, err)
+	} else {
+		http.Redirect(w, r, u, http.StatusTemporaryRedirect)
+	}
 }
 
 func (a *App) Run(addr string) {
