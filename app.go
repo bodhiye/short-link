@@ -13,6 +13,7 @@ import (
 	"gopkg.in/validator.v2"
 )
 
+// App eccapsulates Env, Router and middlewares
 type App struct {
 	Router      *mux.Router
 	Middlewares *Middleware
@@ -28,6 +29,7 @@ type shortlinkResp struct {
 	Shortlink string `json:"shortlink"`
 }
 
+// Initialize is initializtion of app
 func (a *App) Initialize(e *Env) {
 	// set log formatter
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -105,6 +107,7 @@ func (a *App) Redirect(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Run starts listen and server
 func (a *App) Run(addr string) {
 	log.Fatal(http.ListenAndServe(addr, a.Router))
 }
