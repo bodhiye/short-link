@@ -22,7 +22,7 @@ type App struct {
 
 type shortlinkReq struct {
 	URL        string `json:"url" validate:"nonzero"`
-	ExpireDate int64  `json:"expireDate" validate:"min=0"`
+	Expiration int64  `json:"expiration" validate:"min=0"`
 }
 
 type shortlinkResp struct {
@@ -76,7 +76,7 @@ func (a *App) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s, err := a.Config.S.Shorten(req.URL, req.ExpireDate)
+	s, err := a.Config.S.Shorten(req.URL, req.Expiration)
 	if err != nil {
 		respondWithError(w, err)
 	} else {

@@ -31,7 +31,7 @@ func getEnv(ctx context.Context) *Env {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("connect to redis (add: %s password: %s db: %s)", addr, passwd, db)
+	log.Printf("connect to redis (add: %s password: %s db: %d)", addr, passwd, db)
 
 	r := NewRedisCli(ctx, addr, passwd, db)
 	return &Env{S: r}

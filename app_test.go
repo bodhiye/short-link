@@ -17,7 +17,7 @@ const (
 	expTime       = 60
 	longURL       = "https://www.yeqiongzhou.com"
 	shortlink     = "YqZgXf"
-	shortlinkInfo = `{"url": "https://www.yeqiongzhou.com", "created_at": "2020-12-06 22:13:14",  "expiration_in_minutes": 60}`
+	shortlinkInfo = `{"url": "https://www.yeqiongzhou.com", "created_at": "2020-12-06 22:13:14",  "expiration": 60}`
 )
 
 type storageMock struct {
@@ -51,7 +51,7 @@ func init() {
 func TestCreateShortLink(t *testing.T) {
 	var jsonStr = []byte(`{
 		"url": "https://www.yeqiongzhou.com",
-		"expiration_in_minutes": 60}`)
+		"expiration": 60}`)
 	req, err := http.NewRequest("POST", "/api/shorten",
 		bytes.NewBuffer(jsonStr))
 	if err != nil {
@@ -64,7 +64,7 @@ func TestCreateShortLink(t *testing.T) {
 	app.Router.ServeHTTP(rw, req)
 
 	if rw.Code != http.StatusCreated {
-		t.Fatal("Excepted reveive %d. Got %d", http.StatusCreated, rw.Code)
+		t.Fatalf("Excepted reveive %d. Got %d", http.StatusCreated, rw.Code)
 	}
 
 	resp := struct {
@@ -75,7 +75,7 @@ func TestCreateShortLink(t *testing.T) {
 	}
 
 	if resp.Shortlink != shortlink {
-		t.Fatal("Excepted receive %s, Got %s", shortlink, resp.Shortlink)
+		t.Fatalf("Excepted receive %s, Got %s", shortlink, resp.Shortlink)
 	}
 }
 
@@ -91,6 +91,6 @@ func TestRedirect(t *testing.T) {
 	app.Router.ServeHTTP(rw, req)
 
 	if rw.Code != http.StatusTemporaryRedirect {
-		t.Fatal("Excepted reveive %d. Got %d", http.StatusTemporaryRedirect, rw.Code)
+		t.Fatalf("Excepted reveive %d. Got %d", http.StatusTemporaryRedirect, rw.Code)
 	}
 }

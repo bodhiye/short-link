@@ -32,9 +32,9 @@ type RedisCli struct {
 
 // URLDetail contains the detail of the shortlink
 type URLDetail struct {
-	URL                 string        `json:"url"`
-	CreatedAt           string        `json:"created_at"`
-	ExpirationInMinutes time.Duration `json:"expiration_in_minutes"`
+	URL        string        `json:"url"`
+	CreatedAt  string        `json:"created_at"`
+	Expiration time.Duration `json:"expiration"`
 }
 
 // NewRedisCli create a redis Client
@@ -100,9 +100,9 @@ func (r *RedisCli) Shorten(url string, exp int64) (string, error) {
 
 	detail, err := json.Marshal(
 		&URLDetail{
-			URL:                 url,
-			CreatedAt:           time.Now().String(),
-			ExpirationInMinutes: time.Duration(exp),
+			URL:        url,
+			CreatedAt:  time.Now().String(),
+			Expiration: time.Duration(exp),
 		},
 	)
 	if err != nil {
