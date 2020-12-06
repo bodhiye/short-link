@@ -1,4 +1,4 @@
-package main_test
+package main
 
 import (
 	// 引入当前包
@@ -10,21 +10,21 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify.v2/mock"
+	"github.com/stretchr/testify/mock"
 )
 
 const (
 	expTime       = 60
-	longURL       = "https://www.example.com"
-	shortLink     = "YQZgxf"
-	shortLinkInfo = `{"url": "https://www.example.com", "created_at": "2020-06-21 22:32:29", "expiration_in_minutes": 60`
+	longURL       = "https://www.yeqiongzhou.com"
+	shortlink     = "YqZgXf"
+	shortlinkInfo = `{"url": "https://www.yeqiongzhou.com", "created_at": "2020-12-06 22:13:14",  "expiration_in_minutes": 60}`
 )
 
 type storageMock struct {
 	mock.Mock
 }
 
-var app main.App
+var app App
 var mockR *storageMock
 
 func (s *storageMock) Shorten(url string, exp int64) (string, error) {
@@ -37,20 +37,20 @@ func (s *storageMock) Unshorten(eid string) (string, error) {
 	return args.String(0), args.Error(1)
 }
 
-func (s *storageMock) ShortLinkInfo(eid string) (interface{}, error) {
+func (s *storageMock) ShortlinkInfo(eid string) (interface{}, error) {
 	args := s.Called(eid)
 	return args.String(0), args.Error(1)
 }
 
 func init() {
-	app = main.App{}
+	app = App{}
 	mockR = new(storageMock)
-	app.Initialize(&main.Env{S: mockR})
+	app.Initialize(&Env{S: mockR})
 }
 
 func TestCreateShortLink(t *testing.T) {
 	var jsonStr = []byte(`{
-		"url": "https://www.example.com",
+		"url": "https://www.yeqiongzhou.com",
 		"expiration_in_minutes": 60}`)
 	req, err := http.NewRequest("POST", "/api/shorten",
 		bytes.NewBuffer(jsonStr))
@@ -59,7 +59,7 @@ func TestCreateShortLink(t *testing.T) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	mockR.On("Shorten", longURL, int64(expTime)).Return(shortLink, nil).Once()
+	mockR.On("Shorten", longURL, int64(expTime)).Return(shortlink, nil).Once()
 	rw := httptest.NewRecorder()
 	app.Router.ServeHTTP(rw, req)
 
@@ -68,25 +68,25 @@ func TestCreateShortLink(t *testing.T) {
 	}
 
 	resp := struct {
-		ShortLink string `json:"short_link"`
+		Shortlink string `json:"shortlink"`
 	}{}
 	if err := json.NewDecoder(rw.Body).Decode(&resp); err != nil {
 		t.Fatal("Shoule decode the reponse")
 	}
 
-	if resp.ShortLink != shortLink {
-		t.Fatal("Excepted receive %s, Got %s", shortLink, resp.ShortLink)
+	if resp.Shortlink != shortlink {
+		t.Fatal("Excepted receive %s, Got %s", shortlink, resp.Shortlink)
 	}
 }
 
 func TestRedirect(t *testing.T) {
-	r := fmt.Sprintf("/%s", shortLink)
+	r := fmt.Sprintf("/%s", shortlink)
 	req, err := http.NewRequest("GET", r, nil)
 	if err != nil {
 		t.Fatal("Should be able to create a request.", err)
 	}
 
-	mockR.On("Unshorten", shortLink).Return(longURL, nil).Once()
+	mockR.On("Unshorten", shortlink).Return(longURL, nil).Once()
 	rw := httptest.NewRecorder()
 	app.Router.ServeHTTP(rw, req)
 
